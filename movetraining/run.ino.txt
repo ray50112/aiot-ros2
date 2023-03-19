@@ -1,0 +1,45 @@
+#include <Servo.h>  
+Servo servoRight;  
+Servo servoLeft;
+int time = 1000;
+void setup() 
+{ 
+  servoRight.attach(12);   
+  servoLeft.attach(13);   
+  Serial.begin(9600); 
+}  
+
+void loop()
+{ 
+  servoLeft.writeMicroseconds(1500);
+  servoRight.writeMicroseconds(1500);
+  delay(time);
+  char c;
+  if(Serial.available() > 0)
+  {              
+    c = Serial.read();
+    switch (c)  
+    {    
+      case 'R':
+        servoLeft.writeMicroseconds(1600);
+        servoRight.writeMicroseconds(1600);
+        delay(time);
+      break;
+      case 'L':
+        servoLeft.writeMicroseconds(1400);
+        servoRight.writeMicroseconds(1400);
+        delay(time);
+      break;
+      case 'B':
+        servoLeft.writeMicroseconds(1400);
+        servoRight.writeMicroseconds(1600);
+        delay(time);
+      break;
+      case 'F':
+        servoLeft.writeMicroseconds(1600);
+        servoRight.writeMicroseconds(1400);
+        delay(time);
+      break;
+    } 
+  }
+}

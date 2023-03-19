@@ -1,1 +1,1 @@
-# aiot-ros2
+# robotic-pet

@@ -1,0 +1,37 @@
+// 有線控制ABB <_9_line control ABB>
+#include <Servo.h>  
+Servo servoRight;  
+Servo servoLeft;           
+void setup() 
+{ 
+  servoRight.attach(12);   
+  servoLeft.attach(13);   
+  Serial.begin(115200); 
+}  
+
+void loop()
+{ 
+  char c;              
+  // 讀取串列阜資料
+  String inputSpeed = "";
+  if(Serial.available()){
+    c = Serial.read();
+    while (c != '\n') 
+    {
+        inputSpeed += c;
+	delay(5);
+        c = Serial.read();
+    }
+    int SPEED;
+    sscanf(inputSpeed.c_str(),"%c_%d",&c,&SPEED);
+    switch (c)  
+    {    
+       case '1':
+            forward(600,SPEED);	//呼叫前進的副程式
+            break;
+       case '2':
+           trunLeft(600,SPEED); 	//呼叫左轉的副程式
+           break;
+       case '3':
+           trunRight(600,SPEED); 	//呼叫右轉的副程式
+           break;

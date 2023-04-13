@@ -1,0 +1,74 @@
+# import the necessary packages
+from imutils import paths
+import numpy as np
+import imutils
+import cv2
+recognizer = cv2.face.LBPHFaceRecognizer_create()         # 啟用訓練人臉模型方法
+recognizer.read('face.yml')                               # 讀取人臉模型檔
+cascade_path = "xml/haarcascade_frontalface_default.xml"  # 載入人臉追蹤模型
+face_cascade = cv2.CascadeClassifier(cascade_path)
+
+def find_marker(image):
+    # convert the image to grayscale, blur it, and detect edges
+    img = cv2.resize(img,(540,300))
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray)  # 追蹤人臉 ( 目的在於標記出外框 )
+    # 建立姓名和 id 的對照表
+    name = {
+        '1':'Tsai',
+        '2':'Trump',
+        '3':'oxxostudio'
+    }
+    for(x,y,w,h) in faces:
+        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)            # 標記人臉外框
+        idnum,confidence = recognizer.predict(gray[y:y+h,x:x+w])  # 取出 id 號碼以及信心指數 confidence
+        if confidence < 60:
+            text = name[str(idnum)]                               # 如果信心指數小於 60，取得對應的名字
+        else:
+            text = '???'                                          # 不然名字就是 ???
+        # 在人臉外框旁加上名字
+        cv2.putText(img, text, (x,y-5),cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
+    #compute the bounding box of the of the paper region and return it
+    return cv2.minAreaRect(c)  #将包含(x, y)坐标和宽度及高度（像素）的包围盒返回给第20行的调用函数
+
+def distance_to_camera(knownWidth, focalLength, perWidth):
+    #compute and return the distance from the maker to the camera
+    return (knownWidth * focalLength) / perWidth #函数需要一个已知的标记宽度，一个计算出的焦距，以及图像中物体的感知宽度（以像素为单位）
+
+# initialize the known distance from the camera to the object, which
+# in this case is 24 inches
+KNOWN_DISTANCE = 23.6  #物体的已知距離为24英寸。
+
+# initialize the known object width, which in this case, the piece of
+# paper is 12 inches wide
+KNOWN_WIDTH = 2.7   #初始化对象的寬度为11英寸
+
+# load the furst image that contains an object that is KNOWN TO BE 2 feet
+# from our camera, then find the paper marker in the image, and initialize
+# the focal length
+cap = cv2.VideoCapture(0)   # 開啟攝影機
+while(True):
+# 從攝影機擷取一張影像
+  ret, frame = cap.read() 
+  marker = find_marker(cap)
+  focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
+  if cv2.waitKey(1) & 0xFF == ord('q'):
+    break
+
+# loop over the images
+for imagePath in sorted(paths.list_images("./D")): #循环处理我们的图像路径
+    # load the image, find the marker in the image, then compute the
+    # distance to the marker from the camera
+    image = cv2.imread(imagePath)
+    marker = find_marker(image)
+    inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
+    
+    # 在标记物周围画出边界框，并显示距离 并注意处理不同的OpenCV版本
+    box = cv2.cv.BoxPoints(marker) if imutils.is_cv2() else cv2.boxPoints(marker)
+    box = np.int0(box)
+    cv2.drawContours(image, [box], -1, (0, 255, 0), 2)
+    cv2.putText(image, "%.2fft" % (inches / 12),
+        (image.shape[1] - 200, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX,
+        2.0, (0, 255, 0), 3)
+    cv2.imshow("image", cv2.resize(image, (506, 676)))
+    cv2.waitKey(0)

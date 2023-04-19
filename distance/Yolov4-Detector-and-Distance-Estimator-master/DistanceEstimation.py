@@ -2,8 +2,8 @@ import cv2 as cv
 import numpy as np
 
 # Distance constants 
-KNOWN_DISTANCE = 60/2.54 #INCHES
-PERSON_WIDTH = 40/2.54 #INCHES
+KNOWN_DISTANCE = 60/2.54 #CM
+PERSON_WIDTH = 40/2.54 #CM
 
 # Object detector constant 
 CONFIDENCE_THRESHOLD = 0.4
@@ -60,8 +60,8 @@ def focal_length_finder (measured_distance, real_width, width_in_rf):
     return focal_length
 
 # distance finder function 
-def distance_finder(focal_length, real_object_width, width_in_frmae):
-    distance = (real_object_width * focal_length) / width_in_frmae
+def distance_finder(focal_length, real_object_width, width_in_frame):
+    distance = (real_object_width * focal_length) / width_in_frame
     return distance
 
 # reading the reference image from dir 

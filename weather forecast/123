@@ -1,0 +1,11 @@
+import requests
+
+url = 'https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWB-ECE35607-AEC5-4515-BAEB-BE5CAFCE5FF1&locationName=%E6%A1%83%E5%9C%92%E5%B8%82&elementName=Wx,PoP'
+data = requests.get(url)   # 取得 JSON 檔案的內容為文字
+data_json = data.json()    # 轉換成 JSON 格式
+location = data_json['records']['location']
+for i in location:
+    city = i['locationName']    # 縣市名稱
+    wx8 = i['weatherElement'][0]['time'][0]['parameter']['parameterName']    # 天氣現象
+    pop8 = i['weatherElement'][1]['time'][0]['parameter']['parameterName']   # 降雨機率
+    print(f'{city}:\n未來8小時 {wx8}\n\t  降雨機率 {pop8} %\n')

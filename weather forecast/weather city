@@ -1,0 +1,33 @@
+import requests
+
+# 取得使用者輸入的城市名稱
+city_name = input("請輸入欲查詢的城市名稱：")
+
+# 將 "台" 轉換成 "臺"
+if city_name.startswith("台"):
+    city_name = city_name.replace("台", "臺")
+
+url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWB-ECE35607-AEC5-4515-BAEB-BE5CAFCE5FF1&format=JSON&locationName={city_name}&elementName=Wx,PoP'
+data = requests.get(url)
+
+# 檢查 API 請求是否成功
+if data.status_code != 200:
+    print(f"API 請求失敗，錯誤代碼：{data.status_code}")
+    exit()
+
+data_json = data.json()
+location = data_json['records']['location']
+
+# 檢查 location 是否為空
+if not location:
+    print(f"找不到 {city_name} 的天氣資料")
+    exit()
+
+# 只顯示該城市的天氣預報結果
+for i in location:
+    if i['locationName'] == city_name:
+        city = i['locationName']
+        wx8 = i['weatherElement'][0]['time'][0]['parameter']['parameterName']
+        pop8 = i['weatherElement'][1]['time'][0]['parameter']['parameterName']
+        print(f'{city}:\n未來8小時 {wx8}\n\t  降雨機率 {pop8} %\n')
+        break

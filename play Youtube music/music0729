@@ -1,0 +1,56 @@
+import speech_recognition as sr
+from googleapiclient.discovery import build
+import webbrowser
+
+# 使用Google語音識別進行語音轉文字
+def transcribe_speech():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("請說話...")
+        audio = r.listen(source)
+
+    try:
+        text = r.recognize_google(audio, language='zh-TW')  # 將語音轉換為文字
+        print("您說的是：", text)
+        return text
+    except sr.UnknownValueError:
+        print("無法識別語音")
+    except sr.RequestError as e:
+        print("無法取得Google語音識別服務的回應：{0}".format(e))
+
+# 使用YouTube API進行搜尋
+def search_on_youtube(query):
+    api_key = 'AIzaSyCMxpyjGy1Q5nPspq9Vfga9JAvk0SSle20'  # 請填入你的YouTube API金鑰
+    youtube = build('youtube', 'v3', developerKey=api_key)
+
+    # 修改搜尋參數，將type設為'video'，並在query中加入'音樂'或'MV'關鍵字
+    search_response = youtube.search().list(q=query + ' 音樂 MV', part='id', maxResults=1, type='video').execute()
+
+    if 'items' in search_response and len(search_response['items']) > 0:
+        video_id = search_response['items'][0]['id']['videoId']
+        video_url = 'https://www.youtube.com/watch?v=' + video_id
+        return video_url
+
+    print("找不到相關音樂或MV")
+    return None
+
+# 播放視頻
+def play_video(url):
+    webbrowser.open(url)
+
+# 主要程式邏輯
+def main():
+    stop_command = '停止'  # 指定停止指令，可以根據需要更改
+    while True:
+        text = transcribe_speech()
+        if text and text != stop_command:
+            video_url = search_on_youtube(text)
+            if video_url:
+                play_video(video_url)
+        elif text == stop_command:
+            print("程序已停止")
+            break
+
+# 執行主程式
+if __name__ == '__main__':
+    main()

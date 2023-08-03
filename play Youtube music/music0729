@@ -1,20 +1,28 @@
 import speech_recognition as sr
 from googleapiclient.discovery import build
 import webbrowser
+from playrobot import TTS
 
 # 使用Google語音識別進行語音轉文字
 def transcribe_speech():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("請說話...")
+        TTS.wordToSound("請說話")
         audio = r.listen(source)
 
     try:
         text = r.recognize_google(audio, language='zh-TW')  # 將語音轉換為文字
-        print("您說的是：", text)
+        if(text == '停止'):
+            print("開始進行停止程序")
+            TTS.wordToSound("開始進行停止程序")
+        else:
+            print("您想查詢的歌曲是：", text)
+            TTS.wordToSound("您想查詢的歌曲是：" + text)
         return text
     except sr.UnknownValueError:
-        print("無法識別語音")
+        print("無法識別語音，請再說一遍")
+        TTS.wordToSound("無法識別語音，請再說一遍")
     except sr.RequestError as e:
         print("無法取得Google語音識別服務的回應：{0}".format(e))
 
@@ -49,6 +57,7 @@ def main():
                 play_video(video_url)
         elif text == stop_command:
             print("程序已停止")
+            TTS.wordToSound("程序已停止")
             break
 
 # 執行主程式

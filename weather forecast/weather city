@@ -1,7 +1,32 @@
 import requests
+import speech_recognition as sr
+import time
+from playrobot import TTS
 
-# 取得使用者輸入的城市名稱
-city_name = input("請輸入欲查詢的城市名稱：")
+# 使用語音辨識取得使用者輸入的城市名稱
+def get_city_name():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("請說出欲查詢的城市名稱：")
+        TTS.wordToSound("請說出欲查詢的城市名稱：")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    try:
+        city_name = recognizer.recognize_google(audio, language='zh-TW')
+        print(f"你輸入的城市名稱是：{city_name}")
+        TTS.wordToSound("你輸入的城市名稱是：")
+        TTS.wordToSound(city_name)
+        return city_name
+    except sr.UnknownValueError:
+        print("抱歉，無法辨識你的語音")
+        TTS.wordToSound("抱歉，無法辨識你的語音")
+        return None
+
+city_name = get_city_name()
+
+if not city_name:
+    exit()
 
 # 將 "台" 轉換成 "臺"
 if city_name.startswith("台"):
@@ -30,4 +55,5 @@ for i in location:
         wx8 = i['weatherElement'][0]['time'][0]['parameter']['parameterName']
         pop8 = i['weatherElement'][1]['time'][0]['parameter']['parameterName']
         print(f'{city}:\n未來8小時 {wx8}\n\t  降雨機率 {pop8} %\n')
+        TTS.wordToSound(city_name + "未來8小時" + wx8 + "降雨機率" + pop8)
         break

@@ -1,0 +1,78 @@
+import cv2
+import pygame
+from deepface import DeepFace
+
+# 初始化pygame
+pygame.init()
+pygame.mixer.init()  # 初始化音樂播放器
+
+# 定义情绪到音频文件的映射关系
+emotion_to_audio = {
+    "happy": "happy.wav",
+    "sad": "sad.wav",
+    "angry": "angry.wav",
+    "neutral": "neutral.wav",
+    "disgust": "disgust.wav",
+    "fear": "fear.wav",
+    "surprise": "surprise.wav",
+    # ... 可以根据需要添加更多情绪和对应的音频文件
+}
+
+def main():
+    # 初始化摄像头
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Cannot receive frame")
+            break
+
+        cv2.imshow('oxxostudio', frame)
+        key = cv2.waitKey(1)
+
+        # 按下 's' 鍵進行拍照並進行情緒分析
+        if key == ord('s'):
+            cv2.imwrite("captured_photo.jpg", frame)  # 保存拍攝的照片
+            img = cv2.resize(frame, (1000, 600))
+            
+            # 进行情绪分析，允許無法偵測到臉部
+            try:
+                analyze = DeepFace.analyze(img, actions=['emotion'], enforce_detection=False)
+                emotion = analyze[0]['dominant_emotion']
+                print(emotion)
+
+                # 播放对应情绪的音频
+                audio_file = emotion_to_audio.get(emotion)
+                if audio_file:
+                    pygame.mixer.music.load(audio_file)
+                    pygame.mixer.music.play()
+
+            except Exception as e:
+                print("Error:", e)
+                emotion = "error"  # 如果出現錯誤，將情緒設定為 "Neutral"
+
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(img, emotion, (10, 30), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+
+            # 顯示原始大小的圖像
+            cv2.imshow('oxxostudio', img)
+            cv2.waitKey(0)
+
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    # 停止音樂播放
+    pygame.mixer.music.stop()
+
+# 主迴圈
+while True:
+    main()
+    repeat = input("Do you want to repeat? (yes/no): ")
+    if repeat.lower() != 'yes':
+        break
+
+# 释放pygame资源
+pygame.quit()
